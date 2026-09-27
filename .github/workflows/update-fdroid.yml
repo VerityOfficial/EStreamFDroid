@@ -22,9 +22,28 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install fdroidserver
 
-      - name: Create F-Droid signing key
+      - name: Restore F-Droid signing key
+        env:
+          FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
         run: |
-          fdroid init
+          echo "$FDROID_KEYSTORE_BASE64" | base64 -d > keystore.p12
+
+      - name: Configure F-Droid
+        env:
+          FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+          FDROID_KEY_PASSWORD: ${{ secrets.FDROID_KEY_PASSWORD }}
+        run: |
+          cat > config.yml <<EOF
+          repo_url: https://verityofficial.github.io/EStreamFDroid/repo
+          repo_name: Epic Streaming
+          repo_description: Official F-Droid repository for Epic Streaming
+          repo_icon: repo/icons/icon.png
+          keystore: keystore.p12
+          repo_keyalias: fdroidrepo
+          keystorepass: $FDROID_KEYSTORE_PASSWORD
+          keypass: $FDROID_KEY_PASSWORD
+          keydname: CN=Epic Streaming F-Droid Repository, O=Epic Streaming
+          EOF
 
       - name: Generate repository index
         run: |
@@ -34,6 +53,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repo/ metadata/ config.yml
+          git add repo/ metadata/
           git diff --cached --quiet || git commit -m "Update F-Droid repository"
           git push
+
+      - name: Remove signing key
+        if: always()
+        run: |
+          rm -f keystore.p12
