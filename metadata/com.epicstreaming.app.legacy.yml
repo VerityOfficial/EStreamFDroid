@@ -20,5 +20,18 @@ AuthorName: Chunk Productions
 SourceCode: https://github.com/VerityOfficial/Epic-Streaming
 IssueTracker: https://github.com/VerityOfficial/Epic-Streaming/issues
 
-CurrentVersion: 1.7.6
-CurrentVersionCode: 10
+CurrentVersion: 1.8.5
+CurrentVersionCode: 185
+
+AutoUpdateMode: None
+
+Builds:
+  - versionName: 1.8.5
+    versionCode: 185
+    commit: unknown
+    disable: true
+
+Screenshots:
+  - repo/screenshots/com.epicstreaming.app.legacy/01.png
+  - repo/screenshots/com.epicstreaming.app.legacy/02.png
+  - repo/screenshots/com.epicstreaming.app.legacy/03.png
