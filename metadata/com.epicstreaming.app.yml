@@ -1,0 +1,23 @@
+Categories:
+  - Multimedia
+
+Name: Epic Streaming
+
+Summary: Music streaming client for self-hosted Navidrome servers
+
+Description: |
+  Epic Streaming is an Android music streaming client for self-hosted
+  Navidrome servers.
+
+  Features include music library browsing, albums, artists, songs,
+  album artwork, music playback, Android media controls, and
+  notification playback controls.
+
+License: MIT
+
+AuthorName: Chunk Productions
+SourceCode: https://github.com/VerityOfficial/Epic-Streaming
+IssueTracker: https://github.com/VerityOfficial/Epic-Streaming/issues
+
+CurrentVersion: 1.7
+CurrentVersionCode: 7
