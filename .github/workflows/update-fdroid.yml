@@ -1,3 +1,4 @@
+```yaml
 name: Update F-Droid Repository
 
 on:
@@ -52,7 +53,7 @@ jobs:
 
           chmod 600 config.yml
 
-      - name: Generate F-Droid repository for Epic Streaming 1.8.0
+      - name: Generate F-Droid repository
         run: |
           fdroid update --create-metadata
 
@@ -70,10 +71,11 @@ jobs:
           git add repo/ metadata/
 
           if git diff --cached --quiet; then
-            echo "No F-Droid repository changes."
-          else
-            git commit -m "Publish Epic Streaming 1.8.0 to F-Droid"
+            echo "No repository changes to commit."
+            exit 0
           fi
+
+          git commit -m "Update F-Droid repository"
 
       - name: Push generated repository
         run: |
@@ -84,3 +86,4 @@ jobs:
         run: |
           rm -f keystore.p12
           rm -f config.yml
+```
