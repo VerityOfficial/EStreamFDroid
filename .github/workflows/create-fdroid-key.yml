@@ -1,52 +1,77 @@
-name: Create F-Droid Signing Key
+name: Update F-Droid Repository
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  create-key:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate signing passwords
-        run: |
-          STOREPASS="$(openssl rand -base64 32 | tr -d '\n')"
-          echo "STOREPASS=$STOREPASS" >> "$GITHUB_ENV"
-          echo "KEYPASS=$STOREPASS" >> "$GITHUB_ENV"
-
-      - name: Generate F-Droid repository keystore
-        run: |
-          keytool -genkeypair \
-            -alias fdroidrepo \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -keystore keystore.p12 \
-            -storetype PKCS12 \
-            -storepass "$STOREPASS" \
-            -keypass "$KEYPASS" \
-            -dname "CN=Epic Streaming F-Droid Repository, O=Epic Streaming"
-
-      - name: Encode keystore
-        run: |
-          base64 -w 0 keystore.p12 > keystore.base64
-
-      - name: Create secret values file
-        run: |
-          {
-            echo "FDROID_KEYSTORE_BASE64="
-            cat keystore.base64
-            echo
-            echo "FDROID_KEYSTORE_PASSWORD=$STOREPASS"
-            echo "FDROID_KEY_PASSWORD=$KEYPASS"
-          } > fdroid-secrets.txt
-
-      - name: Upload key package
-        uses: actions/upload-artifact@v7
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          name: epic-streaming-fdroid-secrets
-          path: fdroid-secrets.txt
-          retention-days: 1
+          fetch-depth: 0
+
+      - name: Install F-Droid Server
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install fdroidserver
+
+      - name: Restore repository signing key
+        env:
+          FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$FDROID_KEYSTORE_BASE64" | base64 -d > keystore.p12
+
+      - name: Configure F-Droid
+        env:
+          FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+          FDROID_KEY_PASSWORD: ${{ secrets.FDROID_KEY_PASSWORD }}
+        run: |
+          cat > config.yml <<EOF
+          repo_url: https://verityofficial.github.io/EStreamFDroid/repo
+          repo_name: Epic Streaming
+          repo_description: Official F-Droid repository for Epic Streaming
+          keystore: keystore.p12
+          repo_keyalias: fdroidrepo
+          keystorepass: $FDROID_KEYSTORE_PASSWORD
+          keypass: $FDROID_KEY_PASSWORD
+          EOF
+
+      - name: Generate repository index
+        run: |
+          fdroid update --create-metadata
+
+      - name: Commit generated repository files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add repo/ metadata/
+
+          if git diff --cached --quiet; then
+            echo "No repository changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Update F-Droid repository"
+
+      - name: Sync with latest main
+        run: |
+          git pull --rebase origin main
+
+      - name: Push updated repository
+        run: |
+          git push origin main
+
+      - name: Remove signing key
+        if: always()
+        run: |
+          rm -f keystore.p12
