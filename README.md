@@ -9,6 +9,9 @@ Custom F-Droid repository for Epic Streaming.
 | **Regular** | Android 5.1 / API 22 and newer | `com.epicstreaming.app` |
 | **Classic** | Android 2.3 / API 9 and newer | `com.epicstreaming.app.legacy` |
 
+##Repo Link
+The F-Droid Repository link is at https://verityofficial.github.io/EStreamFDroid/repo/.
+
 ### Regular
 
 The Regular edition uses the modern flat interface and is intended for Android 5.1/API 22 and newer.
