@@ -47,35 +47,68 @@ jobs:
 
           chmod 600 config.yml
 
-      - name: Generate repository index
+      - name: Generate F-Droid repository
         run: |
           fdroid update --create-metadata
 
-      - name: Restore public config.yml
+      - name: Restore public config
         run: |
           git checkout -- config.yml
 
-      - name: Commit generated repository files
+      - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Commit generated files
+        run: |
           git add repo/ metadata/
 
           if git diff --cached --quiet; then
-            echo "No repository changes to commit."
+            echo "No F-Droid repository changes."
           else
             git commit -m "Update F-Droid repository"
           fi
 
-      - name: Sync with latest main
+      - name: Push generated repository
         run: |
-          git fetch origin main
-          git rebase origin/main
+          git push origin HEAD:main || {
+            echo "Remote changed while the repository was being generated."
+            echo "Refreshing checkout and retrying..."
 
-      - name: Push updated repository
-        run: |
-          git push origin main
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Regenerating F-Droid repository..."
+
+            git checkout -- config.yml 2>/dev/null || true
+
+            cat > config.yml <<EOF
+          repo_url: https://verityofficial.github.io/EStreamFDroid/repo
+          repo_name: Epic Streaming
+          repo_description: Official F-Droid repository for Epic Streaming
+          keystore: keystore.p12
+          repo_keyalias: fdroidrepo
+          keystorepass: $FDROID_KEYSTORE_PASSWORD
+          keypass: $FDROID_KEY_PASSWORD
+          EOF
+
+            chmod 600 config.yml
+
+            fdroid update --create-metadata
+
+            git checkout -- config.yml
+
+            git add repo/ metadata/
+
+            if git diff --cached --quiet; then
+              echo "No F-Droid repository changes after retry."
+            else
+              git commit -m "Update F-Droid repository"
+            fi
+
+            git push origin HEAD:main
+          }
 
       - name: Remove signing key
         if: always()
