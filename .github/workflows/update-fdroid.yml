@@ -19,15 +19,12 @@ jobs:
 
       - name: Install F-Droid Server Tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y fdroidserver
+          python3 -m pip install --upgrade pip
+          python3 -m pip install fdroidserver
 
-      - name: Check F-Droid configuration
+      - name: Check F-Droid version
         run: |
-          echo "=== config.yml ==="
-          cat config.yml
-          echo "=== repo_url ==="
-          grep '^repo_url:' config.yml
+          fdroid --version
 
       - name: Generate repository index
         run: |
