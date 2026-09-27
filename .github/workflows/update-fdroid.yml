@@ -52,7 +52,7 @@ jobs:
 
           chmod 600 config.yml
 
-      - name: Generate F-Droid repository for Epic Streaming 1.7.6
+      - name: Generate F-Droid repository for Epic Streaming 1.8.0
         run: |
           fdroid update --create-metadata
 
@@ -72,7 +72,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No F-Droid repository changes."
           else
-            git commit -m "Publish Epic Streaming 1.7.6 to F-Droid"
+            git commit -m "Publish Epic Streaming 1.8.0 to F-Droid"
           fi
 
       - name: Push generated repository
