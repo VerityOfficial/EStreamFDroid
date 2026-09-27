@@ -51,6 +51,10 @@ jobs:
         run: |
           fdroid update --create-metadata
 
+      - name: Restore public config.yml
+        run: |
+          git checkout -- config.yml
+
       - name: Commit generated repository files
         run: |
           git config user.name "github-actions[bot]"
@@ -64,13 +68,10 @@ jobs:
             git commit -m "Update F-Droid repository"
           fi
 
-      - name: Restore committed config
-        run: |
-          git restore config.yml
-
       - name: Sync with latest main
         run: |
-          git pull --rebase origin main
+          git fetch origin main
+          git rebase origin/main
 
       - name: Push updated repository
         run: |
