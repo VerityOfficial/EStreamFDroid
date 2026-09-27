@@ -6,15 +6,17 @@ Name: Epic Streaming Classic
 Summary: Classic music streaming client for self-hosted Navidrome servers
 
 Description: |
-  Epic Streaming Classic is the legacy edition of Epic Streaming,
-  designed for older Android devices.
+  Epic Streaming Classic is an Android music streaming client for
+  self-hosted Navidrome servers, designed for older Android devices.
 
-  It provides a skeuomorphic interface and supports Android 2.3/API 9
-  and newer.
+  Features include music library browsing, albums, artists, songs,
+  album artwork, music playback, Android media controls, and
+  notification playback controls.
 
 License: MIT
 
 AuthorName: Chunk Productions
+
 SourceCode: https://github.com/VerityOfficial/Epic-Streaming
 IssueTracker: https://github.com/VerityOfficial/Epic-Streaming/issues
 
