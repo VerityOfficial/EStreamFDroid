@@ -1,0 +1,52 @@
+name: Create F-Droid Signing Key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create-key:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate signing passwords
+        run: |
+          STOREPASS="$(openssl rand -base64 32 | tr -d '\n')"
+          echo "STOREPASS=$STOREPASS" >> "$GITHUB_ENV"
+          echo "KEYPASS=$STOREPASS" >> "$GITHUB_ENV"
+
+      - name: Generate F-Droid repository keystore
+        run: |
+          keytool -genkeypair \
+            -alias fdroidrepo \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -keystore keystore.p12 \
+            -storetype PKCS12 \
+            -storepass "$STOREPASS" \
+            -keypass "$KEYPASS" \
+            -dname "CN=Epic Streaming F-Droid Repository, O=Epic Streaming"
+
+      - name: Encode keystore
+        run: |
+          base64 -w 0 keystore.p12 > keystore.base64
+
+      - name: Create secret values file
+        run: |
+          {
+            echo "FDROID_KEYSTORE_BASE64="
+            cat keystore.base64
+            echo
+            echo "FDROID_KEYSTORE_PASSWORD=$STOREPASS"
+            echo "FDROID_KEY_PASSWORD=$KEYPASS"
+          } > fdroid-secrets.txt
+
+      - name: Upload key package
+        uses: actions/upload-artifact@v7
+        with:
+          name: epic-streaming-fdroid-secrets
+          path: fdroid-secrets.txt
+          retention-days: 1
