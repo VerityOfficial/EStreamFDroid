@@ -1,20 +1,24 @@
 name: Update F-Droid Repository
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: fdroid-update
+  cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -24,13 +28,14 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install fdroidserver
 
-      - name: Restore repository signing key
+      - name: Restore F-Droid signing key
         env:
           FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
         run: |
           echo "$FDROID_KEYSTORE_BASE64" | base64 -d > keystore.p12
+          chmod 600 keystore.p12
 
-      - name: Configure F-Droid
+      - name: Create temporary F-Droid configuration
         env:
           FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
           FDROID_KEY_PASSWORD: ${{ secrets.FDROID_KEY_PASSWORD }}
@@ -47,7 +52,7 @@ jobs:
 
           chmod 600 config.yml
 
-      - name: Generate F-Droid repository
+      - name: Generate F-Droid repository for Epic Streaming 1.7.1
         run: |
           fdroid update --create-metadata
 
@@ -55,62 +60,25 @@ jobs:
         run: |
           git checkout -- config.yml
 
-      - name: Configure Git
+      - name: Commit generated F-Droid files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit generated files
-        run: |
           git add repo/ metadata/
 
           if git diff --cached --quiet; then
-            echo "No F-Droid repository changes."
+            echo "No F-Droid changes to commit."
           else
-            git commit -m "Update F-Droid repository"
+            git commit -m "Publish Epic Streaming 1.7.1 to F-Droid"
           fi
 
-      - name: Push generated repository
+      - name: Push repository
         run: |
-          git push origin HEAD:main || {
-            echo "Remote changed while the repository was being generated."
-            echo "Refreshing checkout and retrying..."
-
-            git fetch origin main
-            git reset --hard origin/main
-
-            echo "Regenerating F-Droid repository..."
-
-            git checkout -- config.yml 2>/dev/null || true
-
-            cat > config.yml <<EOF
-          repo_url: https://verityofficial.github.io/EStreamFDroid/repo
-          repo_name: Epic Streaming
-          repo_description: Official F-Droid repository for Epic Streaming
-          keystore: keystore.p12
-          repo_keyalias: fdroidrepo
-          keystorepass: $FDROID_KEYSTORE_PASSWORD
-          keypass: $FDROID_KEY_PASSWORD
-          EOF
-
-            chmod 600 config.yml
-
-            fdroid update --create-metadata
-
-            git checkout -- config.yml
-
-            git add repo/ metadata/
-
-            if git diff --cached --quiet; then
-              echo "No F-Droid repository changes after retry."
-            else
-              git commit -m "Update F-Droid repository"
-            fi
-
-            git push origin HEAD:main
-          }
+          git push origin HEAD:main
 
       - name: Remove signing key
         if: always()
         run: |
           rm -f keystore.p12
+          rm -f config.yml
