@@ -18,11 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout latest main
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          persist-credentials: true
+          fetch-depth: 1
 
       - name: Install F-Droid Server
         run: |
@@ -57,7 +56,7 @@ jobs:
         run: |
           fdroid update --create-metadata
 
-      - name: Restore public config
+      - name: Restore public configuration
         run: |
           git checkout -- config.yml
 
@@ -66,12 +65,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit generated F-Droid files
+      - name: Commit generated repository
         run: |
           git add repo/ metadata/
 
           if git diff --cached --quiet; then
-            echo "No repository changes to commit."
+            echo "No F-Droid repository changes."
             exit 0
           fi
 
