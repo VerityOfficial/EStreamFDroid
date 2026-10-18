@@ -9,6 +9,9 @@ Description: |
   Epic Music Legacy is an Android music streaming client for
   self-hosted Navidrome servers, designed for older Android devices.
 
+  Epic Music checks for updates every 8 hours on versions 1.9.6 and up 
+  to make sure you have the newest features and newest security updates.
+
   Features include music library browsing, albums, artists, songs,
   album artwork, music playback, Android media controls, and
   notification playback controls.
