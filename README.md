@@ -32,4 +32,4 @@ Log in to the service with these credentials:
 
 ## Version
 
-Current release: **1.7**
+Current release: **2.1.1**
