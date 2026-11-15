@@ -29,7 +29,3 @@ Log in to the service with these credentials:
 | **URL** | https://epicsclient.chunkp.workers.dev/ |
 | **Username** | `user` |
 | **Password** | `1234` |
-
-## Version
-
-Current release: **2.1.1**
